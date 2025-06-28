@@ -1,0 +1,114 @@
+﻿@page "/register"
+@using Loginapp.Models
+@inject NavigationManager Navigation
+@inject Loginapp.Data.AppDbContext DbContext
+@using Microsoft.EntityFrameworkCore
+
+<EditForm Model="@newUser" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="login-wrapper d-flex justify-content-center align-items-center">
+        <div class="login-box text-center p-4">
+            <h3 class="mb-4 text-white">Register</h3>
+
+            @if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                <div class="alert alert-danger py-1">@ErrorMessage</div>
+            }
+
+            <div class="form-group mb-3">
+                <InputText class="form-control" @bind-Value="newUser.Username" placeholder="Username" />
+                <ValidationMessage For="@(() => newUser.Username)" />
+            </div>
+
+            <div class="form-group mb-3">
+                <InputText class="form-control" @bind-Value="newUser.Email" placeholder="Email" />
+                <ValidationMessage For="@(() => newUser.Email)" />
+            </div>
+
+            <div class="form-group mb-3">
+                <InputText class="form-control" @bind-Value="newUser.Password" type="password" placeholder="Password" />
+                <ValidationMessage For="@(() => newUser.Password)" />
+            </div>
+
+            <div class="form-group mb-3">
+                <InputText class="form-control" @bind-Value="ConfirmPassword" type="password" placeholder="Confirm Password" />
+                <ValidationMessage For="@(() => ConfirmPassword)" />
+            </div>
+
+            <button type="submit" class="btn btn-light w-100 mb-3">Register</button>
+
+            <p class="text-white">
+                Already have an account? <a href="/login" class="text-white">Login</a>
+            </p>
+        </div>
+    </div>
+</EditForm>
+
+<style>
+    .login-wrapper {
+        height: 100vh;
+        background: url("images/ffc.jpg") no-repeat center center fixed;
+        background-size: cover;
+    }
+
+    .login-box {
+        width: 370px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .form-control {
+        background-color: rgba(255, 255, 255, 0.3);
+        border: none;
+        color: white;
+    }
+
+    .form-control::placeholder {
+        color: #eee;
+    }
+
+    .form-control:focus {
+        background-color: rgba(255, 255, 255, 0.4);
+        color: black;
+        box-shadow: none;
+    }
+</style>
+
+@code {
+    private User newUser = new();
+    private string ConfirmPassword;
+    private string ErrorMessage;
+
+    private async Task HandleValidSubmit()
+    {
+        ErrorMessage = "";
+
+        if (string.IsNullOrWhiteSpace(newUser.Username) || string.IsNullOrWhiteSpace(newUser.Email) || string.IsNullOrWhiteSpace(newUser.Password))
+        {
+            ErrorMessage = "All fields are required.";
+            return;
+        }
+
+        if (newUser.Password != ConfirmPassword)
+        {
+            ErrorMessage = "Passwords do not match.";
+            return;
+        }
+
+        var exists = await DbContext.Users.AnyAsync(u => u.Username == newUser.Username);
+        if (exists)
+        {
+            ErrorMessage = "Username already exists.";
+            return;
+        }
+
+        DbContext.Users.Add(newUser);
+        await DbContext.SaveChangesAsync();
+
+        Navigation.NavigateTo("/login");
+    }
+}
