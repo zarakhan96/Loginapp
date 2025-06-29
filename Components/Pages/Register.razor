@@ -1,10 +1,11 @@
 ﻿@page "/register"
+@rendermode InteractiveServer
 @using Loginapp.Models
 @inject NavigationManager Navigation
 @inject Loginapp.Data.AppDbContext DbContext
 @using Microsoft.EntityFrameworkCore
 
-<EditForm Model="@newUser" OnValidSubmit="HandleValidSubmit">
+<EditForm Model="@newUser" OnValidSubmit="HandleValidSubmit" FormName="UserRegistrationForm">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
@@ -18,23 +19,30 @@
             }
 
             <div class="form-group mb-3">
-                <InputText class="form-control" @bind-Value="newUser.Username" placeholder="Username" />
-                <ValidationMessage For="@(() => newUser.Username)" />
+
+                <InputText class="form-control" Value="@newUser.Username" ValueChanged="@((val) => newUser.Username = val)" ValueExpression="@(() => newUser.Username)" placeholder="Username" />
+               @*  <InputText class="form-control" @bind-Value="newUser.Username" placeholder="Username" />
+                <ValidationMessage For="@(() => newUser.Username)" /> *@
             </div>
 
             <div class="form-group mb-3">
-                <InputText class="form-control" @bind-Value="newUser.Email" placeholder="Email" />
-                <ValidationMessage For="@(() => newUser.Email)" />
+
+                <InputText class="form-control" Value="@newUser.Email" ValueChanged="@((val) => newUser.Email = val)" ValueExpression="@(() => newUser.Email)" placeholder="Email" />
+
+                @* <InputText class="form-control" @bind-Value="newUser.Email" placeholder="Email" />
+                <ValidationMessage For="@(() => newUser.Email)" /> *@
             </div>
 
             <div class="form-group mb-3">
-                <InputText class="form-control" @bind-Value="newUser.Password" type="password" placeholder="Password" />
-                <ValidationMessage For="@(() => newUser.Password)" />
+                <InputText class="form-control" Value="@newUser.Password" type="password" ValueChanged="@((val) => newUser.Password = val)" ValueExpression="@(() => newUser.Password)" placeholder="Password" />
+                @* <InputText class="form-control" @bind-Value="newUser.Password" type="password" placeholder="Password" />
+                <ValidationMessage For="@(() => newUser.Password)" /> *@
             </div>
 
             <div class="form-group mb-3">
-                <InputText class="form-control" @bind-Value="ConfirmPassword" type="password" placeholder="Confirm Password" />
-                <ValidationMessage For="@(() => ConfirmPassword)" />
+                <InputText class="form-control" Value="@newUser.ConfirmPassword" type="password" ValueChanged="@((val) => newUser.ConfirmPassword = val)" ValueExpression="@(() => newUser.ConfirmPassword)" placeholder="ConfirmPassword" />
+                @*  <InputText class="form-control" @bind-Value="ConfirmPassword" type="password" placeholder="Confirm Password" />
+                <ValidationMessage For="@(() => ConfirmPassword)" /> *@
             </div>
 
             <button type="submit" class="btn btn-light w-100 mb-3">Register</button>
@@ -46,6 +54,7 @@
     </div>
 </EditForm>
 
+<p>Debug: Username=@newUser.Username, Email=@newUser.Email</p>
 <style>
     .login-wrapper {
         height: 100vh;
@@ -87,13 +96,15 @@
     {
         ErrorMessage = "";
 
-        if (string.IsNullOrWhiteSpace(newUser.Username) || string.IsNullOrWhiteSpace(newUser.Email) || string.IsNullOrWhiteSpace(newUser.Password))
-        {
-            ErrorMessage = "All fields are required.";
-            return;
-        }
+        Console.WriteLine($"Username: {newUser.Username}, Email: {newUser.Email}");
 
-        if (newUser.Password != ConfirmPassword)
+        // if (string.IsNullOrWhiteSpace(newUser.Username) || string.IsNullOrWhiteSpace(newUser.Email) || string.IsNullOrWhiteSpace(newUser.Password))
+        // {
+        //     ErrorMessage = "All fields are required.";
+        //     return;
+        // }
+
+        if (newUser.Password != newUser.ConfirmPassword)
         {
             ErrorMessage = "Passwords do not match.";
             return;
@@ -109,6 +120,6 @@
         DbContext.Users.Add(newUser);
         await DbContext.SaveChangesAsync();
 
-        Navigation.NavigateTo("/login");
+        Navigation.NavigateTo("/weather");
     }
 }
