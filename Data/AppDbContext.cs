@@ -18,5 +18,7 @@ namespace Loginapp.Data
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<OtpEntry> OtpEntries { get; set; }
+
     }
 }

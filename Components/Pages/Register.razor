@@ -18,31 +18,62 @@
                 <div class="alert alert-danger py-1">@ErrorMessage</div>
             }
 
+            <!-- New Fields: First Name, Last Name -->
             <div class="form-group mb-3">
+                <InputText class="form-control" Value="@newUser.FirstName" ValueChanged="@((val) => newUser.FirstName = val)" ValueExpression="@(() => newUser.FirstName)" placeholder="First Name" />
+                <ValidationMessage For="@(() => newUser.FirstName)" />
+            </div>
 
+            <div class="form-group mb-3">
+                <InputText class="form-control" Value="@newUser.LastName" ValueChanged="@((val) => newUser.LastName = val)" ValueExpression="@(() => newUser.LastName)" placeholder="Last Name" />
+                <ValidationMessage For="@(() => newUser.LastName)" />
+            </div>
+
+            <!-- Existing Fields -->
+            <div class="form-group mb-3">
                 <InputText class="form-control" Value="@newUser.Username" ValueChanged="@((val) => newUser.Username = val)" ValueExpression="@(() => newUser.Username)" placeholder="Username" />
-               @*  <InputText class="form-control" @bind-Value="newUser.Username" placeholder="Username" />
-                <ValidationMessage For="@(() => newUser.Username)" /> *@
+                <ValidationMessage For="@(() => newUser.Username)" />
             </div>
 
             <div class="form-group mb-3">
-
                 <InputText class="form-control" Value="@newUser.Email" ValueChanged="@((val) => newUser.Email = val)" ValueExpression="@(() => newUser.Email)" placeholder="Email" />
-
-                @* <InputText class="form-control" @bind-Value="newUser.Email" placeholder="Email" />
-                <ValidationMessage For="@(() => newUser.Email)" /> *@
+                <ValidationMessage For="@(() => newUser.Email)" />
             </div>
 
             <div class="form-group mb-3">
-                <InputText class="form-control" Value="@newUser.Password" type="password" ValueChanged="@((val) => newUser.Password = val)" ValueExpression="@(() => newUser.Password)" placeholder="Password" />
-                @* <InputText class="form-control" @bind-Value="newUser.Password" type="password" placeholder="Password" />
-                <ValidationMessage For="@(() => newUser.Password)" /> *@
+                <InputText class="form-control" type="password" Value="@newUser.Password" ValueChanged="@((val) => newUser.Password = val)" ValueExpression="@(() => newUser.Password)" placeholder="Password" />
+                <ValidationMessage For="@(() => newUser.Password)" />
             </div>
 
             <div class="form-group mb-3">
-                <InputText class="form-control" Value="@newUser.ConfirmPassword" type="password" ValueChanged="@((val) => newUser.ConfirmPassword = val)" ValueExpression="@(() => newUser.ConfirmPassword)" placeholder="ConfirmPassword" />
-                @*  <InputText class="form-control" @bind-Value="ConfirmPassword" type="password" placeholder="Confirm Password" />
-                <ValidationMessage For="@(() => ConfirmPassword)" /> *@
+                <InputText class="form-control" type="password" Value="@newUser.ConfirmPassword" ValueChanged="@((val) => newUser.ConfirmPassword = val)" ValueExpression="@(() => newUser.ConfirmPassword)" placeholder="Confirm Password" />
+                <ValidationMessage For="@(() => newUser.ConfirmPassword)" />
+            </div>
+
+            <div class="form-group mb-3">
+                <InputText class="form-control" Value="@newUser.Designation" ValueChanged="@((val) => newUser.Designation = val)" ValueExpression="@(() => newUser.Designation)" placeholder="Designation" />
+                <ValidationMessage For="@(() => newUser.Designation)" />
+            </div>
+
+            <div class="form-group mb-3">
+                <InputText class="form-control" Value="@newUser.ContactNumber" ValueChanged="@((val) => newUser.ContactNumber = val)" ValueExpression="@(() => newUser.ContactNumber)" placeholder="Contact Number" />
+                <ValidationMessage For="@(() => newUser.ContactNumber)" />
+            </div>
+
+            <div class="form-group mb-3">
+                <InputText class="form-control" Value="@newUser.Address" ValueChanged="@((val) => newUser.Address = val)" ValueExpression="@(() => newUser.Address)" placeholder="Address" />
+                <ValidationMessage For="@(() => newUser.Address)" />
+            </div>
+
+            <!-- New Fields: Postal Code, Permanent Address -->
+            <div class="form-group mb-3">
+                <InputText class="form-control" Value="@newUser.PostalCode" ValueChanged="@((val) => newUser.PostalCode = val)" ValueExpression="@(() => newUser.PostalCode)" placeholder="Postal Code" />
+                <ValidationMessage For="@(() => newUser.PostalCode)" />
+            </div>
+
+            <div class="form-group mb-3">
+                <InputText class="form-control" Value="@newUser.PermanentAddress" ValueChanged="@((val) => newUser.PermanentAddress = val)" ValueExpression="@(() => newUser.PermanentAddress)" placeholder="Permanent Address" />
+                <ValidationMessage For="@(() => newUser.PermanentAddress)" />
             </div>
 
             <button type="submit" class="btn btn-light w-100 mb-3">Register</button>
@@ -54,55 +85,96 @@
     </div>
 </EditForm>
 
-<p>Debug: Username=@newUser.Username, Email=@newUser.Email</p>
 <style>
+    body, html {
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        height: 100vh;
+        overflow: hidden;
+    }
+
     .login-wrapper {
         height: 100vh;
-        background: url("images/ffc.jpg") no-repeat center center fixed;
+        background: url("images/FFCNIGHT.jpeg") no-repeat center center fixed;
         background-size: cover;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     .login-box {
-        width: 370px;
-        background: rgba(255, 255, 255, 0.08);
+        width: 100%;
+        max-width: 700px;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 20px;
+        background: rgba(0, 0, 0, 0.55);
         border-radius: 15px;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
-    }
-
-    .form-control {
-        background-color: rgba(255, 255, 255, 0.3);
-        border: none;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 0 25px rgba(0, 255, 255, 0.2);
         color: white;
     }
 
-    .form-control::placeholder {
-        color: #eee;
+    .form-control {
+        background-color: rgba(0, 0, 0, 0.7);
+        border: 2px solid transparent;
+        border-radius: 8px;
+        padding: 8px 12px;
+        margin-bottom: 10px;
+        color: white;
+        transition: all 0.3s ease;
+        width: 100%;
+        font-size: 13px;
+        height: 36px;
     }
 
-    .form-control:focus {
-        background-color: rgba(255, 255, 255, 0.4);
+        .form-control::placeholder {
+            color: #cccccc;
+            font-size: 13px;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #00ffff;
+            background-color: rgba(0, 0, 0, 0.8);
+            box-shadow: 0 0 6px #00ffff, 0 0 10px #00ffff88;
+            color: white;
+        }
+
+    .btn-register {
+        width: 100%;
+        height: 38px;
+        background-color: #00ffff;
         color: black;
-        box-shadow: none;
+        font-weight: bold;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        margin-top: 8px;
+        font-size: 14px;
+    }
+
+        .btn-register:hover {
+            background-color: #00cccc;
+        }
+
+    .validation-message {
+        color: #ffaaaa;
+        font-size: 0.8rem;
+        margin-top: -8px;
+        margin-bottom: 10px;
     }
 </style>
 
 @code {
     private User newUser = new();
-    private string ConfirmPassword;
     private string ErrorMessage;
 
     private async Task HandleValidSubmit()
     {
         ErrorMessage = "";
-
-        Console.WriteLine($"Username: {newUser.Username}, Email: {newUser.Email}");
-
-        // if (string.IsNullOrWhiteSpace(newUser.Username) || string.IsNullOrWhiteSpace(newUser.Email) || string.IsNullOrWhiteSpace(newUser.Password))
-        // {
-        //     ErrorMessage = "All fields are required.";
-        //     return;
-        // }
 
         if (newUser.Password != newUser.ConfirmPassword)
         {
@@ -120,6 +192,6 @@
         DbContext.Users.Add(newUser);
         await DbContext.SaveChangesAsync();
 
-        Navigation.NavigateTo("/weather");
+        Navigation.NavigateTo("/login");
     }
 }
