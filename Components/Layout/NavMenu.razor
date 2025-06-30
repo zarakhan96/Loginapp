@@ -7,7 +7,7 @@
 <input type="checkbox" title="Navigation menu" class="navbar-toggler" />
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column">
+    <nav class="flex-column" style="background-color: #1A3C34; color: white;">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
@@ -21,9 +21,36 @@
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="register">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Register
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Registration
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="About">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Contact Us
             </NavLink>
         </div>
     </nav>
 </div>
 
+<style>
+    .nav-scrollable nav {
+        background-color: #1A3C34;
+        color: white;
+        min-height: 100vh;
+        padding: 20px;
+    }
+
+    .nav-link {
+        color: white;
+    }
+
+        .nav-link:hover {
+            background-color: #2E4F44;
+            color: white;
+        }
+
+        .nav-link.active {
+            background-color: #2E4F44;
+            color: white;
+        }
+</style>
