@@ -4,6 +4,8 @@
 @inject NavigationManager Navigation
 @inject Loginapp.Data.AppDbContext DbContext
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Identity;
+
 
 <EditForm Model="@newUser" OnValidSubmit="HandleValidSubmit" FormName="UserRegistrationForm">
     <DataAnnotationsValidator />
@@ -46,14 +48,24 @@
             </div>
 
             <div class="form-group mb-3">
-                <InputText class="form-control" type="password" Value="@newUser.ConfirmPassword" ValueChanged="@((val) => newUser.ConfirmPassword = val)" ValueExpression="@(() => newUser.ConfirmPassword)" placeholder="Confirm Password" />
+                <InputText class="form-control" type="password" @bind-Value="newUser.ConfirmPassword" placeholder="Confirm Password" />
                 <ValidationMessage For="@(() => newUser.ConfirmPassword)" />
             </div>
 
+
             <div class="form-group mb-3">
-                <InputText class="form-control" Value="@newUser.Designation" ValueChanged="@((val) => newUser.Designation = val)" ValueExpression="@(() => newUser.Designation)" placeholder="Designation" />
+                <InputSelect class="form-control" @bind-Value="newUser.Designation">
+                    <option value="">-- Select Designation --</option>
+                    <option>Human Resources (HR)</option>
+                    <option>Marketing & Sales</option>
+                    <option>Finance & Accounts</option>
+                    <option>Production / Plant Operations</option>
+                    <option>Engineering & Maintenance</option>
+                    <option>Supply Chain & Procurement</option>
+                </InputSelect>
                 <ValidationMessage For="@(() => newUser.Designation)" />
             </div>
+
 
             <div class="form-group mb-3">
                 <InputText class="form-control" Value="@newUser.ContactNumber" ValueChanged="@((val) => newUser.ContactNumber = val)" ValueExpression="@(() => newUser.ContactNumber)" placeholder="Contact Number" />
@@ -142,6 +154,21 @@
             color: white;
         }
 
+    input, select.form-control {
+        background-color: rgba(0, 0, 0, 0.7);
+        border: 2px solid transparent;
+        color: white;
+        font-size: 13px;
+        height: 36px;
+    }
+
+        select.form-control:focus {
+            outline: none;
+            border-color: #00ffff;
+            background-color: rgba(0, 0, 0, 0.8);
+            box-shadow: 0 0 6px #00ffff, 0 0 10px #00ffff88;
+        }
+
     .btn-register {
         width: 100%;
         height: 38px;
@@ -169,6 +196,7 @@
 </style>
 
 @code {
+
     private User newUser = new();
     private string ErrorMessage;
 
@@ -188,10 +216,31 @@
             ErrorMessage = "Username already exists.";
             return;
         }
+        var emailExists = await DbContext.Users.AnyAsync(u => u.Email == newUser.Email);
+        if (emailExists)
+        {
+            ErrorMessage = "Email is already registered.";
+            return;
+        }
+
+
+        var hasher = new PasswordHasher<User>();
+
+        // Hash both passwords
+        string hashedPassword = hasher.HashPassword(newUser, newUser.Password);
+        string hashedConfirmPassword = hasher.HashPassword(newUser, newUser.ConfirmPassword);
+
+        // Use only hashedPassword in DB
+        newUser.Password = hashedPassword;
+
+        // Do NOT store hashed ConfirmPassword
+        newUser.ConfirmPassword = null;
 
         DbContext.Users.Add(newUser);
         await DbContext.SaveChangesAsync();
 
         Navigation.NavigateTo("/login");
     }
+
+
 }

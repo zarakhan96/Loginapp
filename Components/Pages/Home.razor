@@ -1,18 +1,18 @@
 ﻿@page "/"
+@using Loginapp.Services
 @inject NavigationManager Navigation
+@inject UserSessionService SessionService
+@inject ToastService ToastService
 
 <head>
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-          integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <!-- Bootstrap CSS for dropdown -->
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
 
 <div class="landing-container">
     <!-- Top Bar -->
     <div class="top-bar d-flex justify-content-between align-items-center px-4 py-2">
-        <!-- Left: User Info and Dropdown -->
         <div class="d-flex align-items-center">
             <div class="dropdown">
                 <i class="fas fa-user-circle fa-2x dropdown-toggle cursor-pointer"
@@ -22,80 +22,67 @@
                     <li><a class="dropdown-item" href="#">Display</a></li>
                     <li><a class="dropdown-item" href="#">Settings</a></li>
                     <li><hr class="dropdown-divider" /></li>
-                    <li><a class="dropdown-item text-danger" href="#">Logout</a></li>
+                    <li><a class="dropdown-item text-danger" href="#" @onclick="Logout">Logout</a></li>
                 </ul>
             </div>
             <div class="user-info ms-2">
-                <strong>Ajwa Nadeem</strong><br />
-                <small>BTT Intern</small>
+                <strong>@SessionService.FullName</strong><br />
+                <small>@SessionService.Role</small>
             </div>
         </div>
 
-        <!-- Right: Icons and Logo -->
         <div class="d-flex align-items-center">
             <i class="fas fa-search mx-2"></i>
             <i class="fas fa-bell mx-2"></i>
-            <i class="bi bi-house-fill icon-style fs-5 mx-3 cursor-pointer" title="Home"
-               @onclick="@(() => Navigation.NavigateTo("/"))"></i>
             <img src="images/FFC-logo.png" class="ffc-logo ms-2" alt="FFC Logo" />
         </div>
     </div>
 
-    <!-- Background Video -->
-    <video autoplay muted loop class="background-video">
-        <source src="images/backvideo.mpg" type="video/mpg" />
-        Your browser does not support the video tag.
-    </video>
-
     <!-- Tiles Section -->
-    <div class="tiles-container">
-        @foreach (var tile in tiles)
-        {
-            <div class="tile shadow-sm p-3">
-                <h5>@tile.Title</h5>
-                <p><i class="fas fa-seedling" style="color: #3D7C47;"></i></p>
+    <div class="tiles-background">
+        <div class="tiles-wrapper container py-5">
+            <div class="row g-4">
+                @foreach (var tile in tiles)
+                {
+                    <div class="col-12 col-sm-6 col-md-4">
+                        <div class="tile"
+                             style="background-color:@tile.Color;"
+                             onmouseover="this.style.boxShadow='0 0 20px 5px ' + '@tile.Color'"
+                             onmouseout="this.style.boxShadow='none'">
+                            <i class="@tile.Icon tile-icon"></i>
+                            <h5 class="mb-0">@tile.Title</h5>
+                        </div>
+                    </div>
+                }
             </div>
-        }
+        </div>
     </div>
 
     <ContactUs />
 </div>
 
-<!-- Bootstrap JS for dropdown functionality -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <style>
     body {
-        background-color: #F9FDF4;
-        color: #5B5B5B;
+        background-color: #fff;
+        margin: 0;
+        font-family: 'Segoe UI', sans-serif;
     }
 
     .landing-container {
-        position: relative;
-        height: 100vh;
-        overflow: hidden;
-    }
-
-    .background-video {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        z-index: -1;
+        min-height: 100vh;
+        overflow-x: hidden;
     }
 
     .top-bar {
-        background: linear-gradient(to right, #183A1D, #2F6132);
+        background-color: #000; /* BLACK top bar */
         height: 70px;
-        color: white;
-        padding: 0 1rem;
+        color: #fff;
     }
 
-    .user-info strong,
-    .user-info small {
-        color: white;
+    .user-info strong, .user-info small {
+        color: #fff;
     }
 
     .ffc-logo {
@@ -103,29 +90,32 @@
         height: auto;
     }
 
-    .tiles-container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        margin-top: 100px;
-        gap: 1rem;
-        padding: 2rem;
+    .tiles-background {
+        background-color: #fff;
+        padding: 3rem 0;
     }
 
     .tile {
-        width: 250px;
-        background: rgba(255, 255, 255, 0.9);
-        border-radius: 15px;
+        color: white;
         text-align: center;
-        border: 2px solid #3D7C47;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        border-radius: 15px;
+        box-shadow: none;
     }
 
-    .icon-style {
-        color: #D1FF6D;
-    }
+        .tile:hover {
+            transform: translateY(-5px);
+        }
 
-    .cursor-pointer {
-        cursor: pointer;
+    .tile-icon {
+        font-size: 30px;
+        color: white; /* White icons now */
+        margin-bottom: 10px;
     }
 
     .dropdown-menu {
@@ -133,23 +123,72 @@
     }
 </style>
 
+<h3>Welcome</h3>
+<button class="btn btn-primary" @onclick="ShowToast">Test Toast</button>
+
 @code {
+    private bool _sessionLoaded = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_sessionLoaded)
+        {
+            await SessionService.LoadSessionAsync();
+            _sessionLoaded = true;
+            StateHasChanged();
+        }
+    }
+
+    private async Task Logout()
+    {
+        await SessionService.ClearSessionAsync();
+        Navigation.NavigateTo("/login", forceLoad: true);
+    }
+
+    protected override void OnInitialized()
+    {
+        ToastService.ShowToast("🎉 Toaster is working!", "success");
+    }
+
+
+    private void ShowToast()
+    {
+        ToastService.ShowToast("This is a test message!", "success");
+    }
+
     class TileModel
     {
         public string Title { get; set; }
-        public string Source { get; set; }
+        public string Icon { get; set; }
+        public string Color { get; set; }
     }
 
     List<TileModel> tiles = new()
     {
-        new TileModel { Title = "Governance", Source = "FCC" },
-        new TileModel { Title = "Investor Relations", Source = "FCC" },
-        new TileModel { Title = "Fertilizers", Source = "FCC" },
-        new TileModel { Title = "Sustainability", Source = "FFC" },
-        new TileModel { Title = "People", Source = "FCC" },
-        new TileModel { Title = "Social Impact", Source = "FCC" },
-        new TileModel { Title = "About Us", Source = "FCC" },
-        new TileModel { Title = "Media", Source = "FCC" },
-        new TileModel { Title = "Contact Us", Source = "FCC" }
+        new TileModel { Title = "Onboarding", Icon = "fas fa-user-plus", Color = "#4CAF50" },
+        new TileModel { Title = "Payroll", Icon = "fas fa-money-check-alt", Color = "#03A9F4" },
+        new TileModel { Title = "Appraisals", Icon = "fas fa-chart-line", Color = "#9C27B0" },
+        new TileModel { Title = "Training", Icon = "fas fa-chalkboard-teacher", Color = "#FF9800" },
+        new TileModel { Title = "Promotions", Icon = "fas fa-bullhorn", Color = "#F44336" },
+        new TileModel { Title = "Dealer Network", Icon = "fas fa-network-wired", Color = "#009688" },
+        new TileModel { Title = "Market Research", Icon = "fas fa-search", Color = "#3F51B5" },
+        new TileModel { Title = "CRM", Icon = "fas fa-address-book", Color = "#8BC34A" },
+        new TileModel { Title = "Budgeting", Icon = "fas fa-wallet", Color = "#FF5722" },
+        new TileModel { Title = "Invoicing", Icon = "fas fa-file-invoice-dollar", Color = "#673AB7" },
+        new TileModel { Title = "Audits", Icon = "fas fa-clipboard-check", Color = "#00BCD4" },
+        new TileModel { Title = "Salaries", Icon = "fas fa-hand-holding-usd", Color = "#CDDC39" },
+        new TileModel { Title = "Scheduling", Icon = "fas fa-calendar-alt", Color = "#E91E63" },
+        new TileModel { Title = "Monitoring", Icon = "fas fa-eye", Color = "#607D8B" },
+        new TileModel { Title = "Quality Check", Icon = "fas fa-check-circle", Color = "#795548" },
+        new TileModel { Title = "Shift Planning", Icon = "fas fa-tasks", Color = "#FF9800" },
+        new TileModel { Title = "Maintenance", Icon = "fas fa-tools", Color = "#2196F3" },
+        new TileModel { Title = "Shutdowns", Icon = "fas fa-power-off", Color = "#FF5252" },
+        new TileModel { Title = "Troubleshooting", Icon = "fas fa-exclamation-triangle", Color = "#9E9E9E" },
+        new TileModel { Title = "Docs & Drawings", Icon = "fas fa-folder-open", Color = "#FF4081" },
+        new TileModel { Title = "Procurement", Icon = "fas fa-truck-loading", Color = "#FFB300" },
+        new TileModel { Title = "Vendor Management", Icon = "fas fa-users-cog", Color = "#4DD0E1" },
+        new TileModel { Title = "Logistics", Icon = "fas fa-shipping-fast", Color = "#A1887F" },
+        new TileModel { Title = "Inventory", Icon = "fas fa-boxes", Color = "#AED581" }
     };
 }
+

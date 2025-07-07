@@ -1,0 +1,40 @@
+﻿@page "/unauthorized"
+@using Loginapp.Components.Layout
+@layout MainLayout
+
+<div class="unauthorized-wrapper d-flex flex-column justify-content-center align-items-center text-center">
+    <h1 class="display-4">🚫 Access Denied</h1>
+    <p class="lead">You don’t have permission to view this page.</p>
+    <a href="/" class="btn btn-outline-light mt-3">Go Back Home</a>
+</div>
+
+<style>
+    .unauthorized-wrapper {
+        height: 100vh;
+        background: linear-gradient(to right, #000000, #2d2d2d);
+        color: white;
+        padding: 2rem;
+    }
+
+    .unauthorized-wrapper h1 {
+        font-size: 3rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+    }
+
+    .unauthorized-wrapper p {
+        font-size: 1.25rem;
+        color: #bbb;
+    }
+
+    .unauthorized-wrapper a.btn {
+        border-radius: 8px;
+        padding: 0.5rem 1.5rem;
+    }
+
+    .unauthorized-wrapper a:hover {
+        background-color: #00ffff;
+        color: black;
+        font-weight: bold;
+    }
+</style>

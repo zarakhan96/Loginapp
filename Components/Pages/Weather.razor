@@ -1,15 +1,28 @@
 ﻿@page "/weather"
+@using Loginapp.Services
+@inject UserSessionService SessionService
+@inject NavigationManager Navigation
+
 @attribute [StreamRendering]
 
 <PageTitle>Weather</PageTitle>
 
 <h1>Weather</h1>
+<p><strong>Session Role:</strong> @SessionService.Role</p> <!-- Debug output -->
 
 <p>This component demonstrates showing data.</p>
 
-@if (forecasts == null)
+@if (!sessionLoaded)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Checking permissions...</em></p>
+}
+else if (!isAuthorized)
+{
+    <p><em>Redirecting...</em></p>
+}
+else if (forecasts == null)
+{
+    <p><em>Loading weather data...</em></p>
 }
 else
 {
@@ -38,14 +51,40 @@ else
 
 @code {
     private WeatherForecast[]? forecasts;
+    private bool sessionLoaded = false;
+    private bool isAuthorized = false;
+    private bool hasRenderedOnce = false;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // Simulate asynchronous loading to demonstrate streaming rendering
-        await Task.Delay(500);
+        if (firstRender && !hasRenderedOnce)
+        {
+            hasRenderedOnce = true;
 
+            await SessionService.LoadSessionAsync();
+
+            if (SessionService.Role != "Marketing & Sales")
+            {
+                Navigation.NavigateTo("/unauthorized", forceLoad: true);
+                return;
+            }
+
+            isAuthorized = true;
+            sessionLoaded = true;
+
+            // Load weather only if user is authorized
+            await LoadWeatherAsync();
+
+            StateHasChanged(); // Trigger UI update
+        }
+    }
+
+    private async Task LoadWeatherAsync()
+    {
+        await Task.Delay(500); // simulate delay
         var startDate = DateOnly.FromDateTime(DateTime.Now);
         var summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
+
         forecasts = Enumerable.Range(1, 5).Select(index => new WeatherForecast
         {
             Date = startDate.AddDays(index),

@@ -1,0 +1,38 @@
+﻿@page "/appraisals"
+@inject NavigationManager Navigation
+<style>
+    .payroll-container {
+        max-width: 1000px;
+        margin: auto;
+        background-color: #f9fdf9;
+        border-radius: 8px;
+    }
+
+    .card {
+        border: 1px solid #3D7C47;
+    }
+
+        .card h4 {
+            color: #2F6132;
+        }
+</style>
+
+<div class="payroll-container p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Appraisals Dashboard</h2>
+        <NavLink class="btn btn-outline-success" href="/hr">
+            <i class="bi bi-arrow-left"></i> Back to HR
+        </NavLink>
+    </div>
+
+    <div class="card shadow-sm p-4 mb-4">
+        <h4>Performance Reviews</h4>
+        <p>View and manage employee performance evaluations.</p>
+    </div>
+
+    <div class="card shadow-sm p-4 mb-4">
+        <h4>Initiate Appraisal</h4>
+        <p>Start new appraisal cycle for employees.</p>
+        <button class="btn btn-success">Start Appraisal</button>
+    </div>
+</div>

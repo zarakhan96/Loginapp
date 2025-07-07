@@ -1,0 +1,260 @@
+﻿@page "/hr/{email}"
+@inject Loginapp.Data.AppDbContext DbContext
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+@inject UserSessionService SessionService
+@using Loginapp.Services
+@using Microsoft.EntityFrameworkCore
+@using Loginapp.Models
+@using Microsoft.AspNetCore.Components
+@inject ToastService ToastService
+
+
+
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+            crossorigin="anonymous"></script>
+
+    <style>
+        .landing-container {
+            position: relative;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-color: #f4f4f4;
+        }
+
+        .top-bar {
+            background: linear-gradient(to right, #ffffff, #4CAF50);
+            height: 60px;
+            color: black;
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .user-info {
+            line-height: 1;
+            margin-left: 0.5rem;
+        }
+
+            .user-info strong {
+                font-size: 14px;
+                font-weight: 500;
+            }
+
+            .user-info small {
+                font-size: 12px;
+                opacity: 0.8;
+            }
+
+        .icon, .fas, .bi {
+            font-size: 18px;
+            color: antiquewhite;
+        }
+
+        .ffc-logo {
+            height: 60px;
+            width: auto;
+            margin-left: 0.5rem;
+        }
+
+        .tiles-background {
+            padding: 2.5rem 1rem;
+        }
+
+        .tiles-wrapper {
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .tile {
+            width: 100%;
+            border: none;
+            text-align: center;
+            padding: 1.8rem 1rem;
+            border-radius: 15px;
+            transition: all 0.3s ease-in-out;
+            color: white;
+        }
+
+            .tile:hover {
+                transform: translateY(-6px);
+                box-shadow: 0 0 20px 6px rgba(255, 255, 255, 0.2);
+            }
+
+            .tile .icon {
+                font-size: 28px;
+                margin-bottom: 0.8rem;
+            }
+
+        .tile-link {
+            text-decoration: none;
+            display: block;
+        }
+
+        .cursor-pointer {
+            cursor: pointer;
+        }
+
+        .dropdown-menu {
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+@if (user == null)
+{
+    <p>User not found.</p>
+}
+else
+{
+    <div class="landing-container">
+        <!-- Top Bar -->
+        <div class="top-bar d-flex justify-content-between align-items-center px-4 py-2">
+            <div class="d-flex align-items-center">
+                <div class="dropdown">
+                    <i class="fas fa-user-circle fa-2x dropdown-toggle cursor-pointer text-dark"
+                       data-bs-toggle="dropdown" aria-expanded="false"></i>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" @onclick="GoToProfileInfo">Profile</a></li>
+                        <li><a class="dropdown-item" href="#">Display</a></li>
+                        <li><a class="dropdown-item" href="@($"/settings/{email}")">Settings</a></li>
+                        <li><hr class="dropdown-divider" /></li>
+                        <li><a class="dropdown-item text-danger" @onclick="Logout">Logout</a></li>
+                    </ul>
+                </div>
+
+                <div class="user-info ms-2">
+                    <strong>@user.FirstName @user.LastName</strong><br />
+                    <small>@user.Designation</small>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center">
+                <i class="fas fa-search mx-2"></i>
+                <i class="fas fa-bell mx-2" @onclick="ShowNotification"></i>
+                <i class="bi bi-house-fill icon-style fs-5 mx-3 cursor-pointer" title="Home"
+                   @onclick="@(() => Navigation.NavigateTo("/"))"></i>
+                <img src="images/FFC-logo.png" class="ffc-logo ms-2" alt="FFC Logo" />
+                <div>
+                    <button class="btn btn-danger" @onclick="Logout">Logout</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Info -->
+        <div class="container profile-details mt-4">
+            <h3 class="mb-4 text-center">Welcome, @user.FirstName @user.LastName!</h3>
+            <table class="table table-bordered table-striped shadow-sm">
+                <tbody>
+                    <tr><th>Email</th><td>@user.Email</td></tr>
+                    <tr><th>Designation</th><td>@user.Designation</td></tr>
+                    <tr><th>Contact Number</th><td>@user.ContactNumber</td></tr>
+                    <tr><th>Address</th><td>@user.Address</td></tr>
+                    <tr><th>Postal Code</th><td>@user.PostalCode</td></tr>
+                    <tr><th>Permanent Address</th><td>@user.PermanentAddress</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tiles Section -->
+        <div class="tiles-background">
+            <div class="tiles-wrapper container py-5">
+                <div class="row g-4">
+                    @foreach (var tile in hrTiles)
+                    {
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <NavLink class="tile-link" href="@GetTileRoute(tile.Title)">
+                                <div class="tile p-4 cursor-pointer"
+                                     style="background-color:@tile.Color;"
+                                     onmouseover="this.style.boxShadow='0 0 20px 5px ' + '@tile.Color'"
+                                     onmouseout="this.style.boxShadow='none'">
+                                    <i class="@tile.Icon icon mb-2"></i>
+                                    <h5 class="mb-0 text-white">@tile.Title</h5>
+                                </div>
+                            </NavLink>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <ContactUs />
+    </div>
+}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+@code {
+    [Parameter]
+    public string email { get; set; } = string.Empty;
+
+    private User? user;
+
+    private List<(string Title, string Icon, string Color)> hrTiles = new()
+    {
+        ("Onboarding", "fas fa-user-plus", "#4CAF50"),
+        ("Payroll", "fas fa-money-check-alt", "#03A9F4"),
+        ("Appraisals", "fas fa-chart-line", "#9C27B0"),
+        ("Training", "fas fa-chalkboard-teacher", "#FF9800")
+    };
+
+    private bool _shownToast = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_shownToast)
+        {
+            ToastService.ShowToast("👋 Welcome to HR Dashboard!", "success");
+            _shownToast = true;
+            StateHasChanged(); // Force update if needed
+        }
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(email))
+        {
+            Navigation.NavigateTo("/login", true);
+            return;
+        }
+
+        user = await DbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+    }
+
+    private string GetTileRoute(string tileName) =>
+        tileName switch
+        {
+            "Payroll" => "/payroll",
+            "Onboarding" => "/onboarding",
+            "Appraisals" => "/appraisals",
+            "Training" => "/training",
+            _ => "/"
+        };
+
+    private void Logout()
+    {
+        Console.WriteLine("Logout button clicked."); // Debug log
+        SessionService.Logout();
+        Navigation.NavigateTo("/login", forceLoad: true);
+    }
+
+
+    private void GoToProfileInfo()
+    {
+        Navigation.NavigateTo($"/info/{email}");
+    }
+
+    private void ShowNotification()
+    {
+        Console.WriteLine("Notification clicked!");
+    }
+}
