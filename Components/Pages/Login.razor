@@ -1,13 +1,19 @@
 ﻿@page "/login"
 @rendermode InteractiveServer
+
 @using Loginapp.Models
 @using Loginapp.Services
 @inject NavigationManager Navigation
 @inject Loginapp.Data.AppDbContext DbContext
 @inject EmailSystem EmailSender
-@using Microsoft.EntityFrameworkCore
+@inject UserSessionService SessionService
+@inject NetcodeHub.Packages.Components.Toast.ToastService toastService
 
-<EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using NetcodeHub.Packages.Components.Toast
+
+<EditForm Model="@loginModel" OnValidSubmit="@(IsCredentialsVerified ? HandleLogin : VerifyCredentials)">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
@@ -15,35 +21,54 @@
         <div class="login-box text-center p-4">
             <h3 class="mb-4 text-white">Login</h3>
 
-            @if (!string.IsNullOrEmpty(ErrorMessage))
+            @if (!IsCredentialsVerified)
             {
-                <div class="alert alert-danger py-1">@ErrorMessage</div>
+                <div class="form-group mb-3">
+                    <InputText class="form-control hover-effect" @bind-Value="loginModel.Email" placeholder="Email Address" autocomplete="email" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <InputText class="form-control hover-effect" type="password" @bind-Value="loginModel.Password" placeholder="Password" autocomplete="current-password" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <InputSelect class="form-control hover-effect" @bind-Value="loginModel.Designation">
+                        <option value="">-- Select Designation --</option>
+                        <option>Human Resources (HR)</option>
+                        <option>Marketing & Sales</option>
+                        <option>Finance & Accounts</option>
+                        <option>Production / Plant Operations</option>
+                        <option>Engineering & Maintenance</option>
+                        <option>Supply Chain & Procurement</option>
+                    </InputSelect>
+                    <ValidationMessage For="@(() => loginModel.Designation)" />
+                </div>
+            }
+            else
+            {
+                <div class="form-group mb-3">
+                    <InputText class="form-control hover-effect" @bind-Value="loginModel.OTP" placeholder="Enter OTP" autocomplete="one-time-code" />
+                </div>
+
+                <button type="button" class="btn btn-secondary w-100 mb-2" @onclick="SendOTP" disabled="@IsOtpSent">
+                    @((IsOtpSent && OtpCooldownSeconds > 0)
+                        ? $"OTP Sent ({OtpCooldownMinutes}:{OtpCooldownRemainingSeconds:D2})"
+                        : "Send OTP")
+                </button>
             }
 
-            @if (!string.IsNullOrEmpty(SuccessMessage))
-            {
-                <div class="alert alert-success py-1">@SuccessMessage</div>
-            }
-
-            <div class="form-group mb-3">
-                <InputText class="form-control hover-effect" @bind-Value="loginModel.Email" placeholder="Email Address" autocomplete="email" />
-            </div>
-
-            <div class="form-group mb-3">
-                <InputText class="form-control hover-effect" type="password" @bind-Value="loginModel.Password" placeholder="Password" autocomplete="current-password" />
-            </div>
-
-            <div class="form-group mb-3">
-                <InputText class="form-control hover-effect" @bind-Value="loginModel.OTP" placeholder="Enter OTP" autocomplete="one-time-code" />
-            </div>
-
-            <button type="button" class="btn btn-secondary w-100 mb-2" @onclick="SendOTP">Send OTP</button>
-            <button type="submit" class="btn btn-light w-100 mb-3">Login</button>
+            <button type="submit" class="btn btn-light w-100 mb-3">@(IsCredentialsVerified ? "Login" : "Verify Credentials")</button>
 
             <p class="text-white">Don't have an account? <a href="/register" class="text-white">Register</a></p>
         </div>
     </div>
 </EditForm>
+
+<!-- Toast Component -->
+<Toast @ref="toastService.ToastComponent"
+       Duration="4000"
+       IconClass="bi bi-check"
+       Persist="true" />
 
 <style>
     .hover-effect {
@@ -88,17 +113,48 @@
 
 @code {
     private LoginModel loginModel = new();
-    private string ErrorMessage;
-    private string SuccessMessage;
+    private bool IsCredentialsVerified = false;
+    private bool IsOtpSent = false;
+    private int OtpCooldownSeconds = 0;
+    private System.Timers.Timer? cooldownTimer;
+
+    private int OtpCooldownMinutes => OtpCooldownSeconds / 60;
+    private int OtpCooldownRemainingSeconds => OtpCooldownSeconds % 60;
+
+    private async Task VerifyCredentials()
+    {
+        var user = await DbContext.Users.FirstOrDefaultAsync(u => u.Email == loginModel.Email);
+
+        if (user == null)
+        {
+            toastService.ShowErrorToast("Login Failed", "Invalid email.");
+            return;
+        }
+
+        var hasher = new PasswordHasher<User>();
+        var result = hasher.VerifyHashedPassword(user, user.Password, loginModel.Password);
+
+        if (result != PasswordVerificationResult.Success)
+        {
+            toastService.ShowErrorToast("Login Failed", "Incorrect password.");
+            return;
+        }
+
+        if (user.Designation != loginModel.Designation)
+        {
+            toastService.ShowErrorToast("Login Failed", "Designation mismatch.");
+            return;
+        }
+
+        IsCredentialsVerified = true;
+        toastService.ShowSuccessToast("Verified", "✅ Credentials verified. Please request OTP.");
+    }
 
     private async Task SendOTP()
     {
-        ErrorMessage = "";
-        SuccessMessage = "";
-
         if (string.IsNullOrWhiteSpace(loginModel.Email))
         {
-            ErrorMessage = "Enter your email before requesting OTP.";
+            toastService.ShowErrorToast("Missing Info", "Enter your email before requesting OTP.");
             return;
         }
 
@@ -122,46 +178,70 @@
 
         if (emailSent)
         {
-            SuccessMessage = "✅ OTP sent to your email.";
+            toastService.ShowSuccessToast("OTP Sent", "✅ OTP sent to your email.");
+            IsOtpSent = true;
+            StartOtpCooldown();
         }
         else
         {
-            ErrorMessage = "❌ Failed to send OTP. Check your email settings.";
+            toastService.ShowErrorToast("Send Failed", "❌ Failed to send OTP. Check your email settings.");
         }
+    }
+
+    private void StartOtpCooldown()
+    {
+        OtpCooldownSeconds = 300; // 5 minutes
+
+        cooldownTimer?.Stop();
+        cooldownTimer = new System.Timers.Timer(1000); // every 1 second
+
+        cooldownTimer.Elapsed += async (s, e) =>
+        {
+            await InvokeAsync(() =>
+            {
+                OtpCooldownSeconds--;
+
+                if (OtpCooldownSeconds <= 0)
+                {
+                    IsOtpSent = false;
+                    cooldownTimer.Stop();
+                }
+
+                StateHasChanged();
+            });
+        };
+
+        cooldownTimer.Start();
     }
 
     private async Task HandleLogin()
     {
-        ErrorMessage = "";
-        SuccessMessage = "";
-
-        var user = await DbContext.Users
-            .FirstOrDefaultAsync(u => u.Email == loginModel.Email && u.Password == loginModel.Password);
-
-        if (user == null)
-        {
-            ErrorMessage = "Invalid credentials.";
-            return;
-        }
-
         var otpRecord = await DbContext.OtpEntries
             .OrderByDescending(o => o.Id)
             .FirstOrDefaultAsync(o => o.Email == loginModel.Email && o.OTP == loginModel.OTP && o.Expiry > DateTime.Now);
 
         if (otpRecord == null)
         {
-            ErrorMessage = "Invalid or expired OTP.";
+            toastService.ShowErrorToast("Login Failed", "Invalid or expired OTP.");
             return;
         }
 
-        // ✅ Login success
-        Navigation.NavigateTo("/");
-    }
+        // Save session
+        SessionService.LoggedInEmail = loginModel.Email;
 
-    public class LoginModel
-    {
-        public string Email { get; set; }
-        public string Password { get; set; }
-        public string OTP { get; set; }
+        toastService.ShowSuccessToast("Login Successful", "✅ Logged in successfully.");
+
+        string destinationUrl = loginModel.Designation switch
+        {
+            "Human Resources (HR)" => $"/hr/{Uri.EscapeDataString(loginModel.Email)}",
+            "Marketing & Sales" => "/marketing",
+            "Finance & Accounts" => "/finance",
+            "Production / Plant Operations" => "/production",
+            "Engineering & Maintenance" => "/engineering",
+            "Supply Chain & Procurement" => "/supplychain",
+            _ => "/"
+        };
+
+        Navigation.NavigateTo(destinationUrl, forceLoad: true);
     }
 }

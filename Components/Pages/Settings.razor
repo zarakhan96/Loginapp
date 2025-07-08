@@ -1,0 +1,134 @@
+﻿@page "/settings/{email}"
+@inject Loginapp.Data.AppDbContext DbContext
+@inject NavigationManager Navigation
+@using Loginapp.Models
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components
+
+<h3>Settings</h3>
+
+@if (!string.IsNullOrEmpty(updateMessage))
+{
+    <div class="alert alert-success">@updateMessage</div>
+}
+
+@if (!string.IsNullOrEmpty(passwordMessage))
+{
+    <div class="alert @(passwordSuccess ? "alert-success" : "alert-danger")">@passwordMessage</div>
+}
+
+<div class="card mb-4 p-4">
+    <h5>Update Personal Info</h5>
+    <EditForm Model="@user" OnValidSubmit="@UpdateUserInfo">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label>Email</label>
+            <InputText class="form-control" @bind-Value="user.Email" />
+        </div>
+
+        <div class="mb-3">
+            <label>Username</label>
+            <InputText class="form-control" @bind-Value="user.Username" />
+        </div>
+
+        <button class="btn btn-success" type="submit">Update Info</button>
+    </EditForm>
+</div>
+
+<div class="card mb-4 p-4">
+    <h5>Change Password</h5>
+    <EditForm OnValidSubmit="@UpdatePassword">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label>Current Password</label>
+            <InputText type="password" class="form-control" @bind-Value="currentPassword" />
+        </div>
+
+        <div class="mb-3">
+            <label>New Password</label>
+            <InputText type="password" class="form-control" @bind-Value="newPassword" />
+        </div>
+
+        <div class="mb-3">
+            <label>Confirm New Password</label>
+            <InputText type="password" class="form-control" @bind-Value="confirmPassword" />
+        </div>
+
+        <button class="btn btn-primary" type="submit">Change Password</button>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter]
+    public string email { get; set; }
+
+    private User user = new();
+    private string currentPassword = "";
+    private string newPassword = "";
+    private string confirmPassword = "";
+
+    private string updateMessage = "";
+    private string passwordMessage = "";
+    private bool passwordSuccess = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            var fetchedUser = await DbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (fetchedUser != null)
+            {
+                user = fetchedUser;
+            }
+        }
+    }
+
+    private async Task UpdateUserInfo()
+    {
+        var existing = await DbContext.Users.FindAsync(user.Id);
+        if (existing != null)
+        {
+            existing.Email = user.Email;
+            existing.Username = user.Username;
+            await DbContext.SaveChangesAsync();
+
+            updateMessage = "User information updated successfully.";
+        }
+    }
+
+    private async Task UpdatePassword()
+    {
+        passwordMessage = "";
+        passwordSuccess = false;
+
+        var existing = await DbContext.Users.FindAsync(user.Id);
+        if (existing != null)
+        {
+            var hasher = new PasswordHasher<User>();
+            var verification = hasher.VerifyHashedPassword(user, existing.Password, currentPassword);
+
+            if (verification == PasswordVerificationResult.Failed)
+            {
+                passwordMessage = "Current password is incorrect.";
+                return;
+            }
+
+            if (newPassword != confirmPassword)
+            {
+                passwordMessage = "New passwords do not match.";
+                return;
+            }
+
+            existing.Password = hasher.HashPassword(user, newPassword);
+            await DbContext.SaveChangesAsync();
+
+            passwordMessage = "Password updated successfully.";
+            passwordSuccess = true;
+        }
+    }
+}

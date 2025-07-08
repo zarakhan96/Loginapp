@@ -26,8 +26,8 @@
 
         a.neon-btn:hover,
         a.neon-btn.active {
-            border-color: #00ffff;
-            color: #00ffff;
+            border-color: lawngreen;
+            color: lawngreen;
         }
 
 
@@ -76,18 +76,10 @@
     <main>
         <div class="top-row">
             <NavLink href="/login" class="neon-btn" activeClass="active">Login</NavLink>
-            <NavLink href="/about" class="neon-btn" activeClass="active">About</NavLink>
-            <NavLink href="/faq" class="neon-btn" activeClass="active">FAQ</NavLink>
+            <NavLink href="/aboutus" class="neon-btn" activeClass="active">About</NavLink>
+            <NavLink href="/FAQ" class="neon-btn" activeClass="active">FAQ</NavLink>
 
-            <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">
-                <i class="fab fa-instagram"></i>
-            </a>
-            <a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer">
-                <i class="fab fa-facebook-f"></i>
-            </a>
-            <a href="https://www.linkedin.com/" target="_blank" rel="noopener noreferrer">
-                <i class="fab fa-linkedin-in"></i>
-            </a>
+           
         </div>
 
         <article class="content px-4">
@@ -95,5 +87,18 @@
         </article>
     </main>
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ENjdO4Dr2bkBIFxQpeo5aZL0E3n5pGp1Y3zvBihI5Z1n00p4UgkJ8bZkB1z4zRQf"
+        crossorigin="anonymous"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const themeToggle = document.getElementById('themeSwitch');
+        if (themeToggle) {
+            themeToggle.addEventListener('change', function () {
+                document.body.classList.toggle('dark-mode', this.checked);
+            });
+        }
+    });
+</script>
+

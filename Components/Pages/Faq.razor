@@ -1,0 +1,251 @@
+﻿@page "/FAQ"
+@rendermode InteractiveServer
+@using Loginapp.Models
+@using Loginapp.Services
+@inject NavigationManager Navigation
+@inject Loginapp.Data.AppDbContext DbContext
+@inject EmailSystem EmailSender
+@using Microsoft.EntityFrameworkCore
+
+
+
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<link href="https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700&family=Poppins:wght@300;400;500;600&display=swap"
+		  rel="stylesheet" />
+	<link rel="icon" type="image/png" sizes="32x32" href="./images/favicon-32x32.png" />
+	<link rel="stylesheet" href="./style.css" />
+	<title>Frontend Mentor | FAQ Accordion Card</title>
+	<style>
+		.attribution {
+			font-size: 11px;
+			text-align: center;
+		}
+
+			.attribution a {
+				color: hsl(228, 45%, 44%);
+			}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="img">
+			<img src="./images/illustration-woman-online-desktop.svg" alt="" />
+		</div>
+
+		<div class="questions">
+			<h1>FAQ - Fauji Fertilizer Company</h1>
+
+			<div>
+				<h3 class="question">
+					What products does Fauji Fertilizer Company manufacture?
+					<img src="./images/icon-arrow-down.svg" alt="" />
+				</h3>
+				<p class="answer">
+					FFC primarily manufactures urea fertilizer under the brand name Sona Urea. It also produces other fertilizers and agricultural products to support Pakistan's farming community.
+				</p>
+			</div>
+			<hr />
+
+			<div>
+				<h3 class="question">
+					Where are FFC’s production plants located?
+					<img src="./images/icon-arrow-down.svg" alt="" />
+				</h3>
+				<p class="answer">
+					FFC operates its manufacturing plants in Goth Machhi, near Sadiqabad, and at Mirpur Mathelo, Sindh. These are among the most advanced fertilizer plants in the country.
+				</p>
+			</div>
+			<hr />
+
+			<div>
+				<h3 class="question">
+					How can I apply for an internship or job at FFC?
+					<img src="./images/icon-arrow-down.svg" alt="" />
+				</h3>
+				<p class="answer">
+					FFC announces job and internship opportunities on its official website and social media platforms. You can apply online through the careers section at <a href="https://www.ffc.com.pk">www.ffc.com.pk</a>.
+				</p>
+			</div>
+			<hr />
+
+			<div>
+				<h3 class="question">
+					What initiatives does FFC take for corporate social responsibility (CSR)?
+					<img src="./images/icon-arrow-down.svg" alt="" />
+				</h3>
+				<p class="answer">
+					FFC runs various CSR programs including health care, education, water supply, and community development in rural areas of Pakistan, especially near its plant sites.
+				</p>
+			</div>
+			<hr />
+
+			<div>
+				<h3 class="question">
+					How does FFC support farmers in Pakistan?
+					<img src="./images/icon-arrow-down.svg" alt="" />
+				</h3>
+				<p class="answer">
+					FFC provides farmer education, soil testing services, field demonstrations, and agricultural guidance through its agronomy division to promote sustainable and efficient farming.
+				</p>
+			</div>
+		</div>
+
+
+	</div>
+	<ContactUs />
+	<!-- <div class="attribution">
+		Challenge by
+		<a href="https://www.frontendmentor.io?ref=challenge" target="_blank"
+			>Frontend Mentor</a
+		>. Coded by <a href="https://github.com/abubakarMana01">abubakarMana01</a>.
+	</div> -->
+
+	<script src="./index.js"></script>
+</body>
+</html>
+
+<style>
+	  *,
+	  *::before,
+	  *::after {
+		  padding: 0;
+		  margin: 0;
+		  box-sizing: border-box;
+	  }
+
+
+	  .container {
+		  height: fit-content;
+		  max-width: 760px;
+		  background-color: #fff;
+		  padding: 4rem 1rem;
+		  display: flex;
+		  justify-content: space-between;
+		  overflow: hidden;
+		  border-radius: 15px;
+	  }
+
+		  .container .img {
+			  width: 60%;
+			  height: 100%;
+			  position: relative;
+			  left: -100px;
+			  display: flex;
+			  justify-content: center;
+			  align-items: center;
+		  }
+
+		  .container img {
+			  max-width: 350px;
+		  }
+
+		  .container .questions {
+			  width: 100%;
+			  margin-right: 4rem;
+		  }
+
+			  .container .questions h1 {
+				  font-size: 2rem;
+				  margin-bottom: 1.5rem;
+			  }
+
+			  .container .questions h3 {
+				  font-size: 12px;
+				  margin: 10px 0;
+				  color: rgb(90, 90, 90);
+				  display: flex;
+				  font-weight: 600;
+				  justify-content: space-between;
+				  align-items: center;
+			  }
+
+				  .container .questions h3:hover {
+					  color: crimson;
+					  cursor: pointer;
+				  }
+
+				  .container .questions h3 img {
+					  margin-left: 4rem;
+					  height: 7px;
+					  cursor: pointer;
+					  transition: transform 300ms ease-in;
+				  }
+
+			  .container .questions p {
+				  font-size: 12px;
+				  margin-bottom: 10px;
+				  font-weight: 400;
+			  }
+
+	  @@media only screen and (max-width: 760px) {
+		  .container {
+			  max-width: 350px;
+			  padding: 1rem;
+			  display: block;
+			  flex-direction: column;
+			  justify-content: space-between;
+			  overflow: visible;
+			  height: 430px;
+		  }
+
+			  .container .img {
+				  width: 60%;
+				  height: fit-content;
+				  left: 50%;
+				  transform: translateX(-50%) translateY(-125px);
+			  }
+
+			  .container img {
+				  max-width: 250px;
+			  }
+
+			  .container .questions {
+				  width: 100%;
+				  margin-right: 0;
+				  position: relative;
+				  top: -90px;
+			  }
+
+				  .container .questions h1 {
+					  text-align: center;
+				  }
+	  }
+</style>
+
+
+
+<script>
+
+		const answers = document.querySelectorAll('.answer');
+	const arrowIcons = document.querySelectorAll('.question img');
+	const container = document.querySelector('.container');
+
+	answers.forEach(answer => (answer.style.display = 'none'));
+
+	container.addEventListener('click', e => {
+		arrowIcons.forEach(arrow => {
+			if (e.target === arrow) {
+				answers.forEach(answer => {
+					if (answer.parentElement === e.target.parentElement.parentElement) {
+						if (answer.style.display === 'none') {
+							arrow.style.transform = 'rotate(180deg)';
+							answer.style.display = 'block';
+							e.target.parentElement.style.color = 'crimson';
+						} else if (answer.style.display === 'block') {
+							arrow.style.transform = 'rotate(0)';
+							answer.style.display = 'none';
+							e.target.parentElement.style.color = 'rgb(90, 90, 90)';
+						}
+					}
+				});
+			}
+		});
+	});
+</script>
+
+@code {
+
+}

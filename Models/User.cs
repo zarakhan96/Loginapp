@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Loginapp.Models
 {
@@ -22,6 +23,7 @@ namespace Loginapp.Models
         [Required(ErrorMessage = "Password is required")]
         [DataType(DataType.Password)]
         public string Password { get; set; }
+        [NotMapped] 
 
         [Required(ErrorMessage = "Confirm Password is required")]
         [DataType(DataType.Password)]
