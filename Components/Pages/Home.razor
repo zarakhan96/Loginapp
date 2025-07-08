@@ -1,8 +1,9 @@
 ﻿@page "/"
 @using Loginapp.Services
+@using Blazored.Toast.Services
 @inject NavigationManager Navigation
 @inject UserSessionService SessionService
-@inject ToastService ToastService
+@inject IToastService ToastService
 
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
@@ -63,68 +64,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-<style>
-    body {
-        background-color: #fff;
-        margin: 0;
-        font-family: 'Segoe UI', sans-serif;
-    }
 
-    .landing-container {
-        min-height: 100vh;
-        overflow-x: hidden;
-    }
-
-    .top-bar {
-        background-color: #000; /* BLACK top bar */
-        height: 70px;
-        color: #fff;
-    }
-
-    .user-info strong, .user-info small {
-        color: #fff;
-    }
-
-    .ffc-logo {
-        width: 100px;
-        height: auto;
-    }
-
-    .tiles-background {
-        background-color: #fff;
-        padding: 3rem 0;
-    }
-
-    .tile {
-        color: white;
-        text-align: center;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        padding: 2rem;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        border-radius: 15px;
-        box-shadow: none;
-    }
-
-        .tile:hover {
-            transform: translateY(-5px);
-        }
-
-    .tile-icon {
-        font-size: 30px;
-        color: white; /* White icons now */
-        margin-bottom: 10px;
-    }
-
-    .dropdown-menu {
-        font-size: 0.9rem;
-    }
-</style>
-
-<h3>Welcome</h3>
-<button class="btn btn-primary" @onclick="ShowToast">Test Toast</button>
+<!--<h3>Welcome</h3>
+<button class="btn btn-primary" @onclick="ShowToast">Test Toast</button>-->
 
 @code {
     private bool _sessionLoaded = false;
@@ -139,21 +81,20 @@
         }
     }
 
+    protected override void OnInitialized()
+    {
+        ToastService.ShowSuccess("🎉 Toaster is working!");
+    }
+
     private async Task Logout()
     {
         await SessionService.ClearSessionAsync();
         Navigation.NavigateTo("/login", forceLoad: true);
     }
 
-    protected override void OnInitialized()
-    {
-        ToastService.ShowToast("🎉 Toaster is working!", "success");
-    }
-
-
     private void ShowToast()
     {
-        ToastService.ShowToast("This is a test message!", "success");
+        ToastService.ShowSuccess("✅ This is a test toast message!");
     }
 
     class TileModel
@@ -192,3 +133,62 @@
     };
 }
 
+<style>
+    body {
+        background-color: #fff;
+        margin: 0;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .landing-container {
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    .top-bar {
+        background-color: #000;
+        height: 70px;
+        color: #fff;
+    }
+
+    .user-info strong, .user-info small {
+        color: #fff;
+    }
+
+    .ffc-logo {
+        width: 100px;
+        height: auto;
+    }
+
+    .tiles-background {
+        background-color: #fff;
+        padding: 3rem 0;
+    }
+
+    .tile {
+        color: white;
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        border-radius: 15px;
+        box-shadow: none;
+    }
+
+        .tile:hover {
+            transform: translateY(-5px);
+        }
+
+    .tile-icon {
+        font-size: 30px;
+        color: white;
+        margin-bottom: 10px;
+    }
+
+    .dropdown-menu {
+        font-size: 0.9rem;
+    }
+</style>

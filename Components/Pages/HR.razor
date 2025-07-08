@@ -1,16 +1,15 @@
 ﻿@page "/hr/{email}"
-@inject Loginapp.Data.AppDbContext DbContext
-@inject NavigationManager Navigation
 @rendermode InteractiveServer
 
+@inject Loginapp.Data.AppDbContext DbContext
+@inject NavigationManager Navigation
 @inject UserSessionService SessionService
+@inject Blazored.Toast.Services.IToastService ToastService
+
 @using Loginapp.Services
 @using Microsoft.EntityFrameworkCore
 @using Loginapp.Models
 @using Microsoft.AspNetCore.Components
-@inject ToastService ToastService
-
-
 
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
@@ -212,12 +211,11 @@ else
     {
         if (firstRender && !_shownToast)
         {
-            ToastService.ShowToast("👋 Welcome to HR Dashboard!", "success");
+            ToastService.ShowSuccess("👋 Welcome to HR Dashboard!");
             _shownToast = true;
-            StateHasChanged(); // Force update if needed
+            StateHasChanged();
         }
     }
-
 
     protected override async Task OnInitializedAsync()
     {
@@ -242,11 +240,9 @@ else
 
     private void Logout()
     {
-        Console.WriteLine("Logout button clicked."); // Debug log
         SessionService.Logout();
         Navigation.NavigateTo("/login", forceLoad: true);
     }
-
 
     private void GoToProfileInfo()
     {
@@ -255,6 +251,6 @@ else
 
     private void ShowNotification()
     {
-        Console.WriteLine("Notification clicked!");
+        ToastService.ShowInfo("🔔 Notification clicked!");
     }
 }

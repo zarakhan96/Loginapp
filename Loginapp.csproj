@@ -14,6 +14,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="NetcodeHub.Packages.Components.Toast" Version="1.0.1" />
     <PackageReference Include="Syncfusion.Blazor.Notifications" Version="30.1.38" />
     <PackageReference Include="Syncfusion.Blazor.Themes" Version="30.1.38" />
   </ItemGroup>

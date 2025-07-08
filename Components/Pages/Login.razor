@@ -1,32 +1,25 @@
 ﻿@page "/login"
 @rendermode InteractiveServer
+
 @using Loginapp.Models
 @using Loginapp.Services
 @inject NavigationManager Navigation
 @inject Loginapp.Data.AppDbContext DbContext
 @inject EmailSystem EmailSender
 @inject UserSessionService SessionService
+@inject NetcodeHub.Packages.Components.Toast.ToastService toastService
 
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
+@using NetcodeHub.Packages.Components.Toast
 
-<EditForm Model="@loginModel" OnValidSubmit="@(IsCredentialsVerified? HandleLogin : VerifyCredentials)">
+<EditForm Model="@loginModel" OnValidSubmit="@(IsCredentialsVerified ? HandleLogin : VerifyCredentials)">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
     <div class="login-wrapper d-flex justify-content-center align-items-center">
         <div class="login-box text-center p-4">
             <h3 class="mb-4 text-white">Login</h3>
-
-            @if (!string.IsNullOrEmpty(ErrorMessage))
-            {
-                <div class="alert alert-danger py-1">@ErrorMessage</div>
-            }
-
-            @if (!string.IsNullOrEmpty(SuccessMessage))
-            {
-                <div class="alert alert-success py-1">@SuccessMessage</div>
-            }
 
             @if (!IsCredentialsVerified)
             {
@@ -59,10 +52,10 @@
 
                 <button type="button" class="btn btn-secondary w-100 mb-2" @onclick="SendOTP" disabled="@IsOtpSent">
                     @((IsOtpSent && OtpCooldownSeconds > 0)
-                                    ? $"OTP Sent ({OtpCooldownMinutes}:{OtpCooldownRemainingSeconds:D2})"
-                                    : "Send OTP")
-            </button>
-                        }
+                        ? $"OTP Sent ({OtpCooldownMinutes}:{OtpCooldownRemainingSeconds:D2})"
+                        : "Send OTP")
+                </button>
+            }
 
             <button type="submit" class="btn btn-light w-100 mb-3">@(IsCredentialsVerified ? "Login" : "Verify Credentials")</button>
 
@@ -70,6 +63,12 @@
         </div>
     </div>
 </EditForm>
+
+<!-- Toast Component -->
+<Toast @ref="toastService.ToastComponent"
+       Duration="4000"
+       IconClass="bi bi-check"
+       Persist="true" />
 
 <style>
     .hover-effect {
@@ -114,8 +113,6 @@
 
 @code {
     private LoginModel loginModel = new();
-    private string ErrorMessage;
-    private string SuccessMessage;
     private bool IsCredentialsVerified = false;
     private bool IsOtpSent = false;
     private int OtpCooldownSeconds = 0;
@@ -126,14 +123,11 @@
 
     private async Task VerifyCredentials()
     {
-        ErrorMessage = "";
-        SuccessMessage = "";
-
         var user = await DbContext.Users.FirstOrDefaultAsync(u => u.Email == loginModel.Email);
 
         if (user == null)
         {
-            ErrorMessage = "Invalid email.";
+            toastService.ShowErrorToast("Login Failed", "Invalid email.");
             return;
         }
 
@@ -142,28 +136,25 @@
 
         if (result != PasswordVerificationResult.Success)
         {
-            ErrorMessage = "Incorrect password.";
+            toastService.ShowErrorToast("Login Failed", "Incorrect password.");
             return;
         }
 
         if (user.Designation != loginModel.Designation)
         {
-            ErrorMessage = "Designation mismatch.";
+            toastService.ShowErrorToast("Login Failed", "Designation mismatch.");
             return;
         }
 
         IsCredentialsVerified = true;
-        SuccessMessage = "✅ Credentials verified. Please click the button to send OTP to your email.";
+        toastService.ShowSuccessToast("Verified", "✅ Credentials verified. Please request OTP.");
     }
 
     private async Task SendOTP()
     {
-        ErrorMessage = "";
-        SuccessMessage = "";
-
         if (string.IsNullOrWhiteSpace(loginModel.Email))
         {
-            ErrorMessage = "Enter your email before requesting OTP.";
+            toastService.ShowErrorToast("Missing Info", "Enter your email before requesting OTP.");
             return;
         }
 
@@ -187,13 +178,13 @@
 
         if (emailSent)
         {
-            SuccessMessage = "✅ OTP sent to your email.";
+            toastService.ShowSuccessToast("OTP Sent", "✅ OTP sent to your email.");
             IsOtpSent = true;
             StartOtpCooldown();
         }
         else
         {
-            ErrorMessage = "❌ Failed to send OTP. Check your email settings.";
+            toastService.ShowErrorToast("Send Failed", "❌ Failed to send OTP. Check your email settings.");
         }
     }
 
@@ -225,21 +216,20 @@
 
     private async Task HandleLogin()
     {
-        ErrorMessage = "";
-        SuccessMessage = "";
-
         var otpRecord = await DbContext.OtpEntries
             .OrderByDescending(o => o.Id)
             .FirstOrDefaultAsync(o => o.Email == loginModel.Email && o.OTP == loginModel.OTP && o.Expiry > DateTime.Now);
 
         if (otpRecord == null)
         {
-            ErrorMessage = "Invalid or expired OTP.";
+            toastService.ShowErrorToast("Login Failed", "Invalid or expired OTP.");
             return;
         }
 
         // Save session
         SessionService.LoggedInEmail = loginModel.Email;
+
+        toastService.ShowSuccessToast("Login Successful", "✅ Logged in successfully.");
 
         string destinationUrl = loginModel.Designation switch
         {
@@ -252,6 +242,6 @@
             _ => "/"
         };
 
-        Navigation.NavigateTo(destinationUrl, forceLoad: true);
-    }
+        Navigation.NavigateTo(destinationUrl, forceLoad: true);
+    }
 }
